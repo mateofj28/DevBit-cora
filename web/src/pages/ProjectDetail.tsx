@@ -1,13 +1,14 @@
-import { Fragment, useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { api, COMPONENT_LABEL, KIND_LABEL, type Component, type Incident, type Kind, type Project } from '../api';
+import { api, KIND_LABEL, type Incident, type Kind, type Project } from '../api';
+import { Architecture } from '../Architecture';
 import { useAuth } from '../auth';
 import { Icon } from '../icons';
 import { IncidentForm } from '../IncidentForm';
 import { useApiMutation, useHistory, useProject } from '../queries';
 import {
   btnDanger, btnPrimary, btnSecondary, Card, Chip, ConfirmDialog, EmptyState, ErrorBox, formatDate,
-  providerTone, ProviderChip, Skeleton, StatusBadge,
+  ProviderChip, Skeleton, StatusBadge,
 } from '../ui';
 
 const TABS = [
@@ -18,7 +19,6 @@ const TABS = [
 ] as const;
 type TabId = (typeof TABS)[number]['id'];
 
-const COMPONENT_ORDER: Component[] = ['frontend', 'backend', 'base_de_datos', 'almacenamiento', 'otro'];
 const KIND_ORDER: Kind[] = ['lenguaje', 'framework', 'libreria', 'base_de_datos', 'plataforma', 'herramienta', 'otro'];
 const KIND_PLURAL: Record<Kind, string> = {
   lenguaje: 'Lenguajes', framework: 'Frameworks', libreria: 'Librerías', base_de_datos: 'Bases de datos',
@@ -68,38 +68,6 @@ function Detail({ title, text }: { title: string; text: string }) {
     <div>
       <dt className="text-xs font-semibold uppercase tracking-wide text-muted">{title}</dt>
       <dd className="whitespace-pre-line text-sm">{text}</dd>
-    </div>
-  );
-}
-
-/** Diagrama: cada pieza del proyecto como caja, coloreada por proveedor, en el orden frontend → backend → datos. */
-function Architecture({ project }: { project: Project }) {
-  const services = [...project.services].sort((a, b) => COMPONENT_ORDER.indexOf(a.component) - COMPONENT_ORDER.indexOf(b.component));
-  if (services.length === 0) {
-    return <EmptyState title="Sin servicios registrados" text="Edita el proyecto para indicar qué pieza vive en qué proveedor." />;
-  }
-  return (
-    <div className="space-y-4">
-      <div className="flex flex-col items-stretch gap-2 md:flex-row md:flex-wrap md:items-center" role="list" aria-label="Arquitectura del proyecto">
-        {services.map((s, i) => {
-          const tone = providerTone(s.provider);
-          return (
-            <Fragment key={s.id ?? i}>
-              {i > 0 && <span className="self-center text-muted" aria-hidden><span className="md:hidden">↓</span><span className="hidden md:inline">→</span></span>}
-              <div role="listitem" className={`min-w-0 flex-1 rounded-xl border bg-surface p-4 md:min-w-[11rem] md:max-w-[16rem] ${tone.border}`}>
-                <p className="text-xs uppercase tracking-wide text-muted">{COMPONENT_LABEL[s.component]}</p>
-                <p className="mt-0.5 truncate font-semibold">{s.name}</p>
-                <p className={`mt-1 text-sm font-medium ${tone.text}`}>{s.provider}</p>
-                {s.url && <a href={s.url} target="_blank" rel="noopener noreferrer" className="mt-1 block truncate text-xs text-accent hover:underline">{s.url}</a>}
-                {s.notes && <p className="mt-1 text-xs text-muted">{s.notes}</p>}
-              </div>
-            </Fragment>
-          );
-        })}
-      </div>
-      <p className="text-xs text-muted">
-        Proveedores: {[...new Set(services.map((s) => s.provider))].join(', ')}
-      </p>
     </div>
   );
 }
@@ -209,9 +177,7 @@ export default function ProjectDetailPage() {
             )}
 
             {tab === 'arquitectura' && (
-              <Card>
-                <Architecture project={project} />
-              </Card>
+              <Architecture project={project} />
             )}
 
             {tab === 'incidentes' && (

@@ -122,11 +122,28 @@
 
     .animate-in,
     .skeleton,
-    .spinner {
+    .spinner,
+        .arch-flow {
         animation: none;
     }
 }
 
+/* Pestañas con scroll horizontal en celular: sin barra visible. */
+[role="tablist"] { scrollbar-width: none; }
+[role="tablist"]::-webkit-scrollbar { display: none; }
+
+/* Diagrama de arquitectura: puntos que "viajan" por las líneas para mostrar el sentido del flujo. */
+.arch-flow {
+    stroke-dasharray: 2 12;
+    stroke-linecap: round;
+    animation: arch-flow 1.1s linear infinite;
+}
+
+@keyframes arch-flow {
+    to {
+        stroke-dashoffset: -14;
+    }
+}
 /*
  * Evita el zoom automático de iOS Safari al enfocar un campo: se dispara cuando la letra es menor a 16 px.
  * Va fuera de @layer a propósito, para ganar sobre cualquier clase de tamaño que se haya puesto a un campo.
@@ -168,4 +185,10 @@ dialog[open]::backdrop {
 /* Paneles de Radix (desplegables, sugerencias) */
 [data-radix-popper-content-wrapper] {
     z-index: 60 !important;
+}
+/* Va al final para ganar sobre la regla de .arch-flow definida arriba. */
+@media (prefers-reduced-motion: reduce) {
+    .arch-flow {
+        animation: none;
+    }
 }
