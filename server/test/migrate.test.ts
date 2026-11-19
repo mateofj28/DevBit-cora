@@ -89,3 +89,33 @@ describe('catálogo inicial (migración 003)', () => {
     await db.close();
   });
 });
+
+describe('reclasificación de tecnologías registradas a mano (migración 004)', () => {
+  it('corrige "supabase" y "Firebase" guardadas como otro, sin romper los proyectos que las usan', async () => {
+    const db = await createDb({ dataDir: 'memory://' });
+    await runMigrations(db);
+    // Estado de producción antes del arreglo: alguien las creó a mano como "otro".
+    await db.query("DELETE FROM schema_migrations WHERE name LIKE '004_%'");
+    await db.query("DELETE FROM technologies WHERE lower(name) IN ('supabase', 'firebase')");
+    await db.query("INSERT INTO technologies (name, kind) VALUES ('supabase', 'otro'), ('Firebase', 'otro')");
+    await db.query("INSERT INTO projects (name, summary, status, owner) VALUES ('Turnos', 's', 'activo', 'o')");
+    await db.query("INSERT INTO project_technologies SELECT 1, id FROM technologies WHERE lower(name) = 'supabase'");
+
+    expect(await runMigrations(db)).toEqual(['004_reclasificar_tecnologias_conocidas.sql']);
+    const rows = await db.query("SELECT name, kind FROM technologies WHERE lower(name) IN ('supabase', 'firebase') ORDER BY name");
+    expect(rows).toEqual([{ name: 'Firebase', kind: 'plataforma' }, { name: 'Supabase', kind: 'plataforma' }]);
+    const used = await db.query('SELECT t.name FROM project_technologies pt JOIN technologies t ON t.id = pt.technology_id WHERE pt.project_id = 1');
+    expect(used).toEqual([{ name: 'Supabase' }]);
+    await db.close();
+  });
+
+  it('no toca lo que alguien clasificó a propósito con otro tipo', async () => {
+    const db = await createDb({ dataDir: 'memory://' });
+    await runMigrations(db);
+    await db.query("DELETE FROM schema_migrations WHERE name LIKE '004_%'");
+    await db.query("UPDATE technologies SET kind = 'framework' WHERE name = 'Docker'");
+    await runMigrations(db);
+    expect((await db.query("SELECT kind FROM technologies WHERE name = 'Docker'"))[0].kind).toBe('framework');
+    await db.close();
+  });
+});

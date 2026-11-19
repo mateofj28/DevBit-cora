@@ -16,7 +16,7 @@ Catálogo de proyectos de software del equipo: descripción, stack, qué servici
 | Base de datos | PostgreSQL (en desarrollo y tests: PGlite, un PostgreSQL embebido, sin instalar nada) |
 | Frontend | React, Vite, Tailwind CSS (diseño pensado primero para celular), TanStack Query (datos y caché), React Hook Form + Zod (formularios con errores por campo), Radix UI (desplegables, selector con búsqueda, interruptores) y Sonner (notificaciones) |
 | Seguridad | Contraseñas con scrypt + sal, sesión en cookie `httpOnly`, límite de intentos de login, secretos en variables de entorno |
-| Tests | Vitest: API y migraciones (30 pruebas) e interfaz con Testing Library (12 pruebas) |
+| Tests | Vitest: API y migraciones (32 pruebas) e interfaz con Testing Library (12 pruebas) |
 
 En producción un solo servicio sirve la API y el frontend compilado.
 
