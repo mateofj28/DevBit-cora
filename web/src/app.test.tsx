@@ -250,6 +250,24 @@ describe('controles propios', () => {
     expect((field as HTMLInputElement).value).toBe('Svelte');
   });
 
+  it('el responsable se puede elegir de los existentes o crear uno nuevo', async () => {
+    mockApi({ ...signedIn, 'GET /api/catalog': { json: { ...catalog, owners: ['Ana Pérez', 'Luis Gómez'] } } });
+    renderApp('/proyectos/nuevo');
+    const user = userEvent.setup();
+    const field = (await screen.findByLabelText('Responsable *')) as HTMLInputElement;
+
+    await user.type(field, 'lu');
+    await user.click(await screen.findByRole('option', { name: 'Luis Gómez' }));
+    expect(field.value).toBe('Luis Gómez');
+
+    await user.clear(field);
+    await user.type(field, 'Marta Ruiz');
+    const create = await screen.findByRole('option', { name: /Marta Ruiz/ });
+    expect(create.textContent).toContain('Nuevo');
+    await user.click(create);
+    expect(field.value).toBe('Marta Ruiz');
+  });
+
   it('el estado se elige con botones y viaja en el proyecto', async () => {
     mockApi({
       ...signedIn,

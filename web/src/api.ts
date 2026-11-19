@@ -17,7 +17,7 @@ export interface Project {
   stack: StackItem[]; services: Service[]; incidents?: Incident[];
 }
 export interface HistoryEntry { id: number; userName: string; summary: string; createdAt: string }
-export interface Catalog { technologies: StackItem[]; providers: string[] }
+export interface Catalog { technologies: StackItem[]; providers: string[]; owners?: string[] }
 
 export const STATUS_LABEL: Record<Status, string> = {
   activo: 'Activo', en_desarrollo: 'En desarrollo', mantenimiento: 'Mantenimiento', pausado: 'Pausado', finalizado: 'Finalizado',

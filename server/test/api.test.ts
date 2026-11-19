@@ -175,6 +175,13 @@ describe('proyectos', () => {
     expect(catalog.technologies.filter((t: any) => t.name.toLowerCase() === 'react')).toHaveLength(1);
   });
 
+  it('sugiere los responsables ya usados, sin repetir por mayúsculas', async () => {
+    await call('POST', '/api/projects', editorCookie, projectBody({ name: 'Con responsable', owner: 'ANA PÉREZ', incidents: [] }));
+    const owners: string[] = (await call('GET', '/api/catalog', readerCookie)).json().owners;
+    expect(owners.filter((o) => o.toLowerCase() === 'ana pérez')).toHaveLength(1);
+    expect(owners).toContain('Administrador'); // personas con cuenta activa
+  });
+
   it('edita un proyecto y reemplaza su stack y servicios', async () => {
     const created = (await call('POST', '/api/projects', editorCookie, projectBody({ name: 'Editable', incidents: [] }))).json();
     const res = await call('PUT', `/api/projects/${created.id}`, editorCookie, {

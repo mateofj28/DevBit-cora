@@ -140,7 +140,21 @@ function ProjectForm({ id, initial }: { id?: string; initial: ProjectValues }) {
             <Controller control={control} name="status" render={({ field }) => <Segmented aria-label="Estado" value={field.value} onChange={field.onChange} options={STATUS_OPTIONS} />} />
             <FieldError message={errors.status?.message} />
           </div>
-          <Field label="Responsable *" error={errors.owner?.message}><Input maxLength={120} {...register('owner')} /></Field>
+          <Field label="Responsable *" error={errors.owner?.message} hint="Elige a alguien existente o escribe un nombre nuevo.">
+            <Controller
+              control={control}
+              name="owner"
+              render={({ field }) => (
+                <Combobox
+                  aria-label="Responsable"
+                  placeholder="Ej. Ana Pérez"
+                  value={field.value}
+                  suggestions={catalog?.owners ?? []}
+                  onChange={field.onChange}
+                />
+              )}
+            />
+          </Field>
         </div>
         <div className="grid gap-4 sm:grid-cols-3">
           <Field label="Repositorio" error={errors.repoUrl?.message}><Input inputMode="url" placeholder="https://" {...register('repoUrl')} /></Field>
