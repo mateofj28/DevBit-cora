@@ -28,7 +28,7 @@ export const emptyIncident = (): IncidentValues => ({
 });
 
 // Las filas de stack y servicios que se dejan en blanco se descartan al enviar.
-const stackRow = z.object({ name: z.string().max(60, 'Máximo 60 caracteres.'), kind: z.enum(['lenguaje', 'framework', 'base_de_datos', 'otro']) });
+const stackRow = z.object({ name: z.string().max(60, 'Máximo 60 caracteres.'), kind: z.enum(['lenguaje', 'framework', 'libreria', 'base_de_datos', 'plataforma', 'herramienta', 'otro']) });
 
 const serviceRow = z
   .object({

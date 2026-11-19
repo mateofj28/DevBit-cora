@@ -8,7 +8,7 @@ import { AuthProvider } from './auth';
 import { queryClient } from './queryClient';
 
 const editor = { id: 1, email: 'ana@equipo.com', name: 'Ana', role: 'editor', active: true };
-const catalog = { technologies: [{ name: 'React', kind: 'framework' }], providers: ['Firebase', 'AWS'] };
+const catalog = { technologies: [{ name: 'React', kind: 'libreria' }, { name: 'Supabase', kind: 'plataforma' }], providers: ['Firebase', 'AWS'] };
 const savedProject = {
   id: 7, name: 'Nuevo', summary: 'x', status: 'activo', owner: 'Ana', repoUrl: null, productionUrl: null, docsUrl: null,
   archived: false, incidentCount: 0, updatedAt: '', stack: [], services: [], incidents: [],
@@ -109,7 +109,7 @@ describe('formulario de proyecto', () => {
     expect(post.body).toMatchObject({
       name: 'Nuevo',
       owner: 'Ana',
-      stack: [{ name: 'React', kind: 'framework' }], // el tipo se completa solo desde el catálogo
+      stack: [{ name: 'React', kind: 'libreria' }], // el tipo se completa solo desde el catálogo
       services: [], // la fila de servicio vacía se descartó
       incidents: [],
     });
@@ -239,7 +239,7 @@ describe('controles propios', () => {
     const field = (await screen.findAllByLabelText('Tecnología'))[0];
 
     await user.type(field, 'Rea');
-    await user.click(await screen.findByRole('option', { name: 'React' }));
+    await user.click(await screen.findByRole('option', { name: /^React/ }));
     expect((field as HTMLInputElement).value).toBe('React');
 
     await user.clear(field);
@@ -338,5 +338,47 @@ describe('reconfirmación', () => {
 
     await user.click(screen.getByRole('button', { name: 'Descartar y salir' }));
     expect(await screen.findByRole('heading', { name: 'Proyectos' })).toBeTruthy();
+  });
+});
+
+describe('clasificación de tecnologías', () => {
+  it('al elegir una tecnología conocida su tipo se completa solo y queda bloqueado', async () => {
+    mockApi(signedIn);
+    renderApp('/proyectos/nuevo');
+    const user = userEvent.setup();
+    const field = (await screen.findAllByLabelText('Tecnología'))[0];
+
+    await user.type(field, 'Supabase');
+    const kind = await screen.findByRole('combobox', { name: 'Tipo (definido por el catálogo)' });
+    expect(kind.textContent).toContain('Plataforma / servicio');
+    expect((kind as HTMLButtonElement).disabled).toBe(true);
+
+    await user.clear(field);
+    await user.type(field, 'React');
+    expect((await screen.findByRole('combobox', { name: 'Tipo (definido por el catálogo)' })).textContent).toContain('Librería');
+  });
+
+  it('una tecnología nueva deja elegir el tipo y viaja con él', async () => {
+    mockApi({
+      ...signedIn,
+      'POST /api/projects': { status: 201, json: savedProject },
+      'GET /api/projects/7': { json: savedProject },
+      'GET /api/projects/7/history': { json: [] },
+    });
+    renderApp('/proyectos/nuevo');
+    const user = userEvent.setup();
+    await user.type(await screen.findByLabelText('Nombre *'), 'Nuevo');
+    await user.type(screen.getByLabelText('Resumen: de qué trata *'), 'Un resumen');
+    await user.type(screen.getByLabelText('Responsable *'), 'Ana');
+    await user.type((await screen.findAllByLabelText('Tecnología'))[0], 'Zig');
+
+    const kind = await screen.findByRole('combobox', { name: 'Tipo' });
+    expect((kind as HTMLButtonElement).disabled).toBe(false);
+    await user.click(kind);
+    await user.click(await screen.findByRole('option', { name: 'Herramienta' }));
+    await user.click(screen.getByRole('button', { name: 'Crear proyecto' }));
+
+    await waitFor(() => expect(calls.some((c) => c.method === 'POST')).toBe(true));
+    expect(calls.find((c) => c.method === 'POST')!.body.stack).toEqual([{ name: 'Zig', kind: 'herramienta' }]);
   });
 });

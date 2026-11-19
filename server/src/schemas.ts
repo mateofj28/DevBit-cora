@@ -2,7 +2,7 @@ import { Type, type Static } from '@sinclair/typebox';
 
 export const STATUSES = ['activo', 'en_desarrollo', 'mantenimiento', 'pausado', 'finalizado'] as const;
 export const COMPONENTS = ['frontend', 'backend', 'base_de_datos', 'almacenamiento', 'otro'] as const;
-export const KINDS = ['lenguaje', 'framework', 'base_de_datos', 'otro'] as const;
+export const KINDS = ['lenguaje', 'framework', 'libreria', 'base_de_datos', 'plataforma', 'herramienta', 'otro'] as const;
 export const ROLES = ['editor', 'lector'] as const;
 
 const literalUnion = <T extends readonly string[]>(values: T) =>

@@ -1,6 +1,6 @@
 export type Status = 'activo' | 'en_desarrollo' | 'mantenimiento' | 'pausado' | 'finalizado';
 export type Component = 'frontend' | 'backend' | 'base_de_datos' | 'almacenamiento' | 'otro';
-export type Kind = 'lenguaje' | 'framework' | 'base_de_datos' | 'otro';
+export type Kind = 'lenguaje' | 'framework' | 'libreria' | 'base_de_datos' | 'plataforma' | 'herramienta' | 'otro';
 export type Role = 'editor' | 'lector';
 
 export interface User { id: number; email: string; name: string; role: Role; active: boolean }
@@ -26,7 +26,8 @@ export const COMPONENT_LABEL: Record<Component, string> = {
   frontend: 'Frontend', backend: 'Backend', base_de_datos: 'Base de datos', almacenamiento: 'Almacenamiento', otro: 'Otro',
 };
 export const KIND_LABEL: Record<Kind, string> = {
-  lenguaje: 'Lenguaje', framework: 'Framework', base_de_datos: 'Base de datos', otro: 'Otro',
+  lenguaje: 'Lenguaje', framework: 'Framework', libreria: 'Librería', base_de_datos: 'Base de datos',
+  plataforma: 'Plataforma / servicio', herramienta: 'Herramienta', otro: 'Otro',
 };
 
 export class ApiError extends Error {

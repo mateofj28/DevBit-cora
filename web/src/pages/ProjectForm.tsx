@@ -1,5 +1,5 @@
 import { useEffect, useState, type MouseEvent } from 'react';
-import { Controller, useFieldArray, useForm } from 'react-hook-form';
+import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import {
@@ -64,6 +64,9 @@ function ProjectForm({ id, initial }: { id?: string; initial: ProjectValues }) {
   const stack = useFieldArray({ control, name: 'stack' });
   const services = useFieldArray({ control, name: 'services' });
   const incidents = useFieldArray({ control, name: 'incidents' });
+  const stackValues = useWatch({ control, name: 'stack' });
+  const techByName = new Map((catalog?.technologies ?? []).map((t) => [t.name.toLowerCase(), t]));
+  const techHints = Object.fromEntries((catalog?.technologies ?? []).map((t) => [t.name, KIND_LABEL[t.kind] ?? t.kind]));
 
   const save = useApiMutation((body: unknown) => api<Project>(editing ? 'PUT' : 'POST', editing ? `/api/projects/${id}` : '/api/projects', body), editing ? 'Cambios guardados' : 'Proyecto creado');
 
@@ -165,7 +168,7 @@ function ProjectForm({ id, initial }: { id?: string; initial: ProjectValues }) {
 
       <Card className="space-y-3">
         <h2 className="font-semibold">Stack</h2>
-        <p className="text-xs text-muted">Elige del catálogo o escribe una tecnología nueva; se agregará al catálogo.</p>
+        <p className="text-xs text-muted">Elige del catálogo y el tipo se completa solo. Si escribes una tecnología nueva, elige su tipo y se agregará al catálogo.</p>
         {stack.fields.map((f, i) => (
           <div key={f.id}>
             <div className="grid grid-cols-[1fr_auto] gap-2 sm:grid-cols-[1fr_12rem_auto]">
@@ -178,6 +181,7 @@ function ProjectForm({ id, initial }: { id?: string; initial: ProjectValues }) {
                     placeholder="Ej. React"
                     value={field.value}
                     suggestions={catalog?.technologies.map((t) => t.name) ?? []}
+                    hints={techHints}
                     onChange={(v) => { field.onChange(v); onTechName(i, v); }}
                   />
                 )}
@@ -187,7 +191,8 @@ function ProjectForm({ id, initial }: { id?: string; initial: ProjectValues }) {
                 name={`stack.${i}.kind`}
                 render={({ field }) => (
                   <Dropdown
-                    aria-label="Tipo"
+                    aria-label={techByName.has((stackValues?.[i]?.name ?? '').trim().toLowerCase()) ? 'Tipo (definido por el catálogo)' : 'Tipo'}
+                    disabled={techByName.has((stackValues?.[i]?.name ?? '').trim().toLowerCase())}
                     className="order-3 col-span-2 sm:order-none sm:col-span-1"
                     value={field.value}
                     onChange={(v) => v && field.onChange(v)}

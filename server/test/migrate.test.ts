@@ -53,3 +53,39 @@ describe('migraciones', () => {
     await db.close();
   });
 });
+
+describe('catálogo inicial (migración 003)', () => {
+  it('en una base nueva carga tecnologías y proveedores con su clasificación', async () => {
+    const db = await createDb({ dataDir: 'memory://' });
+    await runMigrations(db);
+    const kindOf = async (name: string) =>
+      (await db.query('SELECT kind FROM technologies WHERE lower(name) = lower($1)', [name]))[0]?.kind;
+
+    expect(await kindOf('React')).toBe('libreria');
+    expect(await kindOf('Go')).toBe('lenguaje');
+    expect(await kindOf('Supabase')).toBe('plataforma');
+    expect(await kindOf('Firebase')).toBe('plataforma');
+    expect(await kindOf('Firestore')).toBe('base_de_datos');
+    expect(await kindOf('Node.js')).toBe('plataforma');
+    expect(await kindOf('Docker')).toBe('herramienta');
+
+    const providers = (await db.query('SELECT name FROM providers')).map((p) => p.name);
+    expect(providers).toEqual(expect.arrayContaining(['Firebase', 'AWS', 'Google Cloud', 'Supabase', 'Railway']));
+    await db.close();
+  });
+
+  it('en una base que ya tenía el catálogo viejo reclasifica y agrega sin duplicar', async () => {
+    const db = await createDb({ dataDir: 'memory://' });
+    await runMigrations(db);
+    // Simula el estado anterior: React como framework y la migración 003 sin registrar.
+    await db.query("UPDATE technologies SET kind = 'framework' WHERE name = 'React'");
+    await db.query("DELETE FROM technologies WHERE name = 'Supabase'");
+    await db.query("DELETE FROM schema_migrations WHERE name LIKE '003_%'");
+
+    expect(await runMigrations(db)).toEqual(['003_catalogo_ampliado.sql']);
+    expect((await db.query("SELECT kind FROM technologies WHERE name = 'React'"))[0].kind).toBe('libreria');
+    expect(await db.query("SELECT 1 FROM technologies WHERE name = 'Supabase'")).toHaveLength(1);
+    expect(await db.query("SELECT 1 FROM technologies WHERE lower(name) = 'react'")).toHaveLength(1);
+    await db.close();
+  });
+});

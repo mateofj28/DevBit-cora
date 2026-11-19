@@ -19,8 +19,11 @@ const TABS = [
 type TabId = (typeof TABS)[number]['id'];
 
 const COMPONENT_ORDER: Component[] = ['frontend', 'backend', 'base_de_datos', 'almacenamiento', 'otro'];
-const KIND_ORDER: Kind[] = ['lenguaje', 'framework', 'base_de_datos', 'otro'];
-const KIND_PLURAL: Record<Kind, string> = { lenguaje: 'Lenguajes', framework: 'Frameworks', base_de_datos: 'Bases de datos', otro: 'Otras' };
+const KIND_ORDER: Kind[] = ['lenguaje', 'framework', 'libreria', 'base_de_datos', 'plataforma', 'herramienta', 'otro'];
+const KIND_PLURAL: Record<Kind, string> = {
+  lenguaje: 'Lenguajes', framework: 'Frameworks', libreria: 'Librerías', base_de_datos: 'Bases de datos',
+  plataforma: 'Plataformas', herramienta: 'Herramientas', otro: 'Otras',
+};
 
 /** Panel lateral con los datos clave del proyecto, siempre visible junto a las pestañas. */
 function PropertiesPanel({ project }: { project: Project }) {

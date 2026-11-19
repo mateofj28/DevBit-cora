@@ -97,11 +97,13 @@ export function Segmented<T extends string>({
  * Si lo escrito no existe, se ofrece crearlo (se agrega al catálogo al guardar).
  */
 export function Combobox({
-  value, onChange, suggestions, placeholder, 'aria-label': ariaLabel, createLabel = 'Nuevo', className = '',
+  value, onChange, suggestions, hints, placeholder, 'aria-label': ariaLabel, createLabel = 'Nuevo', className = '',
 }: {
   value: string;
   onChange: (v: string) => void;
   suggestions: string[];
+  /** Texto gris a la derecha de cada sugerencia (por ejemplo, el tipo de tecnología). */
+  hints?: Record<string, string>;
   placeholder?: string;
   'aria-label': string;
   createLabel?: string;
@@ -171,7 +173,12 @@ export function Combobox({
                 >
                   {create ? (
                     <><span className="rounded bg-accent/20 px-1.5 text-xs text-accent">{createLabel}</span>«{item.slice(9)}»</>
-                  ) : item}
+                  ) : (
+                    <>
+                      <span className="flex-1 truncate">{item}</span>
+                      {hints?.[item] && <span className="text-xs text-muted">{hints[item]}</span>}
+                    </>
+                  )}
                 </li>
               );
             })}

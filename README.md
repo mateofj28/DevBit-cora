@@ -16,7 +16,7 @@ Catálogo de proyectos de software del equipo: descripción, stack, qué servici
 | Base de datos | PostgreSQL (en desarrollo y tests: PGlite, un PostgreSQL embebido, sin instalar nada) |
 | Frontend | React, Vite, Tailwind CSS (diseño pensado primero para celular), TanStack Query (datos y caché), React Hook Form + Zod (formularios con errores por campo), Radix UI (desplegables, selector con búsqueda, interruptores) y Sonner (notificaciones) |
 | Seguridad | Contraseñas con scrypt + sal, sesión en cookie `httpOnly`, límite de intentos de login, secretos en variables de entorno |
-| Tests | Vitest: API y migraciones (27 pruebas) e interfaz con Testing Library (12 pruebas) |
+| Tests | Vitest: API y migraciones (30 pruebas) e interfaz con Testing Library (12 pruebas) |
 
 En producción un solo servicio sirve la API y el frontend compilado.
 
@@ -103,7 +103,7 @@ El archivo `.env` no se sube al repositorio.
 
 ## Cómo se usa
 
-- **Editor**: *Proyectos → Nuevo proyecto*. En una sola pantalla se cargan datos generales, stack, servicios (pieza → proveedor) e incidentes. Las tecnologías y proveedores se autocompletan desde el catálogo; si escribes uno nuevo se agrega solo, sin duplicar por mayúsculas.
+- **Editor**: *Proyectos → Nuevo proyecto*. En una sola pantalla se cargan datos generales, stack, servicios (pieza → proveedor) e incidentes. Las tecnologías, proveedores y responsables se autocompletan desde el catálogo; si escribes uno nuevo se agrega solo, sin duplicar por mayúsculas. Al elegir una tecnología conocida su tipo (lenguaje, framework, librería, base de datos, plataforma/servicio, herramienta) se completa solo.
 - **Archivar**: desde el detalle del proyecto. No se borra; se oculta del listado y se ve con *Ver archivados*.
 - **Usuarios**: sección *Usuarios* (solo editores). Las cuentas se crean por invitación; no hay registro abierto.
 - **Consulta**: en el listado, el botón del proveedor (por ejemplo *Firebase*) filtra al instante.

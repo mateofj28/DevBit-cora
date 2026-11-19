@@ -22,7 +22,7 @@ const projects = [
     summary: 'Portal web donde los clientes consultan pedidos y facturas.',
     status: 'activo', owner: 'Ana Pérez',
     repoUrl: 'https://github.com/equipo/portal', productionUrl: 'https://portal.example.com',
-    stack: [{ name: 'React', kind: 'framework' }, { name: 'TypeScript', kind: 'lenguaje' }, { name: 'Node.js', kind: 'framework' }, { name: 'PostgreSQL', kind: 'base_de_datos' }],
+    stack: [{ name: 'React', kind: 'libreria' }, { name: 'TypeScript', kind: 'lenguaje' }, { name: 'Node.js', kind: 'plataforma' }, { name: 'PostgreSQL', kind: 'base_de_datos' }],
     services: [
       { name: 'Sitio web', component: 'frontend', provider: 'Firebase' },
       { name: 'API', component: 'backend', provider: 'AWS' },
@@ -39,7 +39,7 @@ const projects = [
     name: 'App de inventario',
     summary: 'Aplicación móvil para el control de stock en bodega.',
     status: 'en_desarrollo', owner: 'Luis Gómez',
-    stack: [{ name: 'Flutter', kind: 'framework' }, { name: 'Dart', kind: 'lenguaje' }, { name: 'Firestore', kind: 'base_de_datos' }],
+    stack: [{ name: 'Flutter', kind: 'framework' }, { name: 'Dart', kind: 'lenguaje' }, { name: 'Firebase', kind: 'plataforma' }, { name: 'Firestore', kind: 'base_de_datos' }],
     services: [
       { name: 'Backend y datos', component: 'backend', provider: 'Firebase' },
     ],
