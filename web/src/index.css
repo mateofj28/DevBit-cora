@@ -127,6 +127,25 @@
     }
 }
 
+/*
+ * Evita el zoom automático de iOS Safari al enfocar un campo: se dispara cuando la letra es menor a 16 px.
+ * Va fuera de @layer a propósito, para ganar sobre cualquier clase de tamaño que se haya puesto a un campo.
+ * No se usa maximum-scale en el viewport: bloquearía el zoom manual, que es una ayuda de accesibilidad.
+ */
+@media (hover: none) and (pointer: coarse) {
+
+    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+    textarea,
+    select {
+        font-size: 16px;
+    }
+}
+
+/* Barra inferior flotante (celular): vidrio esmerilado tipo iOS */
+.glass-nav {
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    backdrop-filter: blur(24px) saturate(180%);
+}
 /* Diálogos: entrada suave */
 dialog[open] {
     animation: fade-in 0.16s ease-out;

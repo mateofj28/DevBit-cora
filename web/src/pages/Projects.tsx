@@ -69,7 +69,7 @@ export default function ProjectsPage() {
           <Input
             type="search"
             className="!pl-9"
-            placeholder="Filtrar por nombre, responsable, tecnología, proveedor o error…"
+            placeholder="Filtrar proyectos…"
             value={text}
             onChange={(e) => setText(e.target.value)}
             aria-label="Buscar"

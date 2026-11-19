@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Navigate } from 'react-router-dom';
 import { type Role, type User } from '../api';
 import { useAuth } from '../auth';
+import { useConfirm } from '../confirm';
 import { createUser, updateUser, useApiMutation, useUsers } from '../queries';
 import { userSchema, type UserValues } from '../schemas';
 import { Dropdown } from '../controls';
@@ -43,6 +44,22 @@ export default function UsersPage() {
   const create = useApiMutation(createUser, 'Usuario creado');
   const update = useApiMutation(updateUser, 'Cambios guardados');
   const [passwordFor, setPasswordFor] = useState<User | null>(null);
+  const { ask, dialog: confirmDialog } = useConfirm();
+
+  // Cambios de acceso: piden reconfirmación porque afectan lo que una persona puede hacer.
+  const changeRole = async (u: User, role: Role) => {
+    const label = role === 'editor' ? 'Editor (puede crear y modificar)' : 'Consulta (solo lectura)';
+    const ok = await ask({ title: 'Cambiar rol', message: `¿Cambiar el rol de ${u.name} a ${label}?`, confirmLabel: 'Cambiar rol', danger: false });
+    if (ok) update.mutate({ id: u.id, role });
+  };
+  const toggleActive = async (u: User) => {
+    const ok = await ask(
+      u.active
+        ? { title: 'Desactivar usuario', message: `${u.name} ya no podrá iniciar sesión hasta que lo actives de nuevo.`, confirmLabel: 'Desactivar' }
+        : { title: 'Activar usuario', message: `${u.name} volverá a poder iniciar sesión.`, confirmLabel: 'Activar', danger: false },
+    );
+    if (ok) update.mutate({ id: u.id, active: !u.active });
+  };
 
   const {
     register, control, handleSubmit, reset, setError, formState: { errors, isSubmitting },
@@ -101,13 +118,13 @@ export default function UsersPage() {
                   aria-label={`Rol de ${u.name}`}
                   value={u.role}
                   disabled={u.id === me?.id}
-                  onChange={(v) => v && update.mutate({ id: u.id, role: v as Role })}
+                  onChange={(v) => v && v !== u.role && changeRole(u, v as Role)}
                   options={[{ value: 'lector', label: 'Consulta' }, { value: 'editor', label: 'Editor' }]}
                   className="!w-auto min-w-32"
                 />
                 <button className={btnSecondary} onClick={() => setPasswordFor(u)}>Cambiar contraseña</button>
                 {u.id !== me?.id && (
-                  <button className={btnSecondary} onClick={() => update.mutate({ id: u.id, active: !u.active })}>{u.active ? 'Desactivar' : 'Activar'}</button>
+                  <button className={btnSecondary} onClick={() => toggleActive(u)}>{u.active ? 'Desactivar' : 'Activar'}</button>
                 )}
               </div>
             </li>
@@ -115,6 +132,7 @@ export default function UsersPage() {
         </ul>
       </Card>
 
+      {confirmDialog}
       <PasswordDialog
         user={passwordFor}
         onClose={() => setPasswordFor(null)}

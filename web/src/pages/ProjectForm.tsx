@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState, type MouseEvent } from 'react';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
@@ -8,6 +8,7 @@ import {
 } from '../api';
 import { useAuth } from '../auth';
 import { Combobox, Dropdown, Segmented } from '../controls';
+import { useConfirm } from '../confirm';
 import { IncidentFields } from '../IncidentForm';
 import { useApiMutation, useCatalog, useProject } from '../queries';
 import { emptyIncident, projectSchema, type ProjectValues } from '../schemas';
@@ -58,7 +59,7 @@ function ProjectForm({ id, initial }: { id?: string; initial: ProjectValues }) {
   const [formError, setFormError] = useState<unknown>(null);
 
   const {
-    register, control, handleSubmit, setValue, setError, formState: { errors, isSubmitting },
+    register, control, handleSubmit, setValue, setError, formState: { errors, isSubmitting, isDirty },
   } = useForm<ProjectValues>({ resolver: zodResolver(projectSchema), defaultValues: initial });
   const stack = useFieldArray({ control, name: 'stack' });
   const services = useFieldArray({ control, name: 'services' });
@@ -100,9 +101,27 @@ function ProjectForm({ id, initial }: { id?: string; initial: ProjectValues }) {
 
   const hasErrors = Object.keys(errors).length > 0;
 
+  // Reconfirmación antes de abandonar el formulario con cambios sin guardar.
+  const { ask, dialog: discardDialog } = useConfirm();
+  const backTo = editing ? `/proyectos/${id}` : '/';
+  const leave = async (e: MouseEvent) => {
+    if (!isDirty || isSubmitting) return; // sin cambios: el enlace navega normal
+    e.preventDefault();
+    const ok = await ask({ title: 'Descartar cambios', message: 'Tienes cambios sin guardar. Si sales ahora se perderán.', confirmLabel: 'Descartar y salir' });
+    if (ok) navigate(backTo);
+  };
+
+  // Aviso del navegador si cierra o recarga la pestaña con cambios sin guardar.
+  useEffect(() => {
+    if (!isDirty) return;
+    const warn = (e: BeforeUnloadEvent) => e.preventDefault();
+    window.addEventListener('beforeunload', warn);
+    return () => window.removeEventListener('beforeunload', warn);
+  }, [isDirty]);
+
   return (
     <form onSubmit={submit} noValidate className="space-y-5">
-      <Link to={editing ? `/proyectos/${id}` : '/'} className="text-sm text-accent hover:underline">← Volver</Link>
+      <Link to={backTo} onClick={leave} className="text-sm text-accent hover:underline">← Volver</Link>
       <PageHeader title={editing ? 'Editar proyecto' : 'Nuevo proyecto'} description="Los campos con * son obligatorios." />
       <ErrorBox error={formError} />
       {hasErrors && !formError && (
@@ -238,10 +257,11 @@ function ProjectForm({ id, initial }: { id?: string; initial: ProjectValues }) {
         </Card>
       )}
 
-      <div className="sticky bottom-0 -mx-4 flex gap-2 border-t border-line bg-bg/95 px-4 py-3 backdrop-blur">
+      <div className="sticky bottom-[5.5rem] z-10 -mx-4 flex gap-2 md:bottom-0 border-t border-line bg-bg/95 px-4 py-3 backdrop-blur">
         <Button loading={isSubmitting}>{isSubmitting ? 'Guardando…' : editing ? 'Guardar cambios' : 'Crear proyecto'}</Button>
-        <Link to={editing ? `/proyectos/${id}` : '/'} className={btnSecondary}>Cancelar</Link>
+        <Link to={backTo} onClick={leave} className={btnSecondary}>Cancelar</Link>
       </div>
+      {discardDialog}
     </form>
   );
 }

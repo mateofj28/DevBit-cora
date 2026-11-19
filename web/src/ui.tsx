@@ -9,7 +9,8 @@ import { cn } from './cn';
 // ---------- Estilos base (usan los colores semánticos de index.css) ----------
 
 export const inputCls =
-  'block h-10 w-full rounded-lg border border-line bg-surface px-3 text-sm text-fg placeholder:text-muted/70 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/25 disabled:opacity-60';
+  // text-base (16 px) en celular: iOS hace zoom automático al enfocar campos con letra menor a 16 px.
+  'block h-10 w-full rounded-lg border border-line bg-surface px-3 text-base text-fg md:text-sm placeholder:text-muted/70 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/25 disabled:opacity-60';
 
 // ---------- Botones: una sola definición con variantes y tamaños ----------
 

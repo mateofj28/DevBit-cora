@@ -281,3 +281,44 @@ describe('controles propios', () => {
     );
   });
 });
+
+describe('reconfirmación', () => {
+  it('cerrar sesión pide confirmar: cancelar la mantiene, confirmar la cierra', async () => {
+    mockApi({ ...signedIn, 'POST /api/auth/logout': { json: { ok: true } } });
+    renderApp('/');
+    const user = userEvent.setup();
+    await screen.findByRole('heading', { name: 'Proyectos' });
+
+    await user.click(screen.getAllByRole('button', { name: 'Salir' })[0]);
+    expect(await screen.findByText('¿Seguro que quieres salir de DevBitácora?')).toBeTruthy();
+    await user.click(screen.getByRole('button', { name: 'Cancelar' }));
+    expect(calls.some((c) => c.url.pathname === '/api/auth/logout')).toBe(false);
+
+    await user.click(screen.getAllByRole('button', { name: 'Salir' })[0]);
+    await screen.findByText('¿Seguro que quieres salir de DevBitácora?');
+    const buttons = screen.getAllByRole('button', { name: 'Salir' });
+    await user.click(buttons[buttons.length - 1]); // el botón del modal es el último
+    await waitFor(() => expect(calls.some((c) => c.url.pathname === '/api/auth/logout')).toBe(true));
+  });
+
+  it('salir del formulario con cambios pide confirmar; sin cambios sale directo', async () => {
+    mockApi(signedIn);
+    renderApp('/proyectos/nuevo');
+    const user = userEvent.setup();
+
+    // Sin cambios: "Cancelar" navega al listado sin preguntar.
+    await user.click(await screen.findByRole('link', { name: 'Cancelar' }));
+    expect(await screen.findByRole('heading', { name: 'Proyectos' })).toBeTruthy();
+    expect(screen.queryByText('Descartar cambios')).toBeNull();
+
+    // Con cambios: pregunta primero.
+    await user.click((await screen.findAllByRole('link', { name: /Nuevo/ }))[0]);
+    await user.type(await screen.findByLabelText('Nombre *'), 'Algo');
+    await user.click(screen.getByRole('link', { name: 'Cancelar' }));
+    expect(await screen.findByText('Tienes cambios sin guardar. Si sales ahora se perderán.')).toBeTruthy();
+    expect(screen.getByLabelText('Nombre *')).toBeTruthy(); // sigue en el formulario
+
+    await user.click(screen.getByRole('button', { name: 'Descartar y salir' }));
+    expect(await screen.findByRole('heading', { name: 'Proyectos' })).toBeTruthy();
+  });
+});

@@ -5,6 +5,7 @@ import { CommandPalette } from './CommandPalette';
 import { Icon } from './icons';
 import { Logo } from './Logo';
 import { cn } from './cn';
+import { useConfirm } from './confirm';
 import LoginPage from './pages/Login';
 import ProjectsPage from './pages/Projects';
 import { useTheme } from './theme';
@@ -41,8 +42,23 @@ function Layout() {
 
   const side = ({ isActive }: { isActive: boolean }) =>
     `flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition ${isActive ? 'bg-surface2 text-fg' : 'text-muted hover:bg-surface2 hover:text-fg'}`;
+  // Pestaña de la barra flotante: la activa lleva una cápsula resaltada, como en iOS.
   const tab = ({ isActive }: { isActive: boolean }) =>
-    `flex flex-1 flex-col items-center gap-0.5 py-2 text-xs font-medium ${isActive ? 'text-accent' : 'text-muted'}`;
+    cn(
+      'flex flex-1 flex-col items-center gap-0.5 rounded-full px-2 py-2 text-[11px] font-medium transition active:scale-95',
+      isActive ? 'bg-fg/10 text-accent' : 'text-muted',
+    );
+
+  const { ask, dialog: logoutDialog } = useConfirm();
+  const confirmLogout = async () => {
+    const ok = await ask({
+      title: 'Cerrar sesión',
+      message: '¿Seguro que quieres salir de DevBitácora?',
+      confirmLabel: 'Salir',
+      danger: false,
+    });
+    if (ok) await logout();
+  };
   const themeLabel = theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro';
 
   return (
@@ -62,7 +78,7 @@ function Layout() {
           <button onClick={toggle} className={`${side({ isActive: false })} w-full`}>
             <Icon name={theme === 'dark' ? 'sun' : 'moon'} className="h-4 w-4" />{themeLabel}
           </button>
-          <button onClick={logout} className={`${side({ isActive: false })} w-full`}><Icon name="logout" className="h-4 w-4" />Salir</button>
+          <button onClick={confirmLogout} className={`${side({ isActive: false })} w-full`}><Icon name="logout" className="h-4 w-4" />Salir</button>
         </div>
       </aside>
 
@@ -88,7 +104,7 @@ function Layout() {
         )}
       </header>
 
-      <main className="mx-auto max-w-6xl px-4 pb-24 pt-5 md:px-8 md:pb-10 md:pt-8">
+      <main className="mx-auto max-w-6xl px-4 pb-32 pt-5 md:px-8 md:pb-10 md:pt-8">
         <ErrorBoundary>
           <Suspense fallback={<div className="space-y-3"><Skeleton className="h-8 w-1/3" /><Skeleton className="h-32" /></div>}>
             <Outlet />
@@ -96,15 +112,21 @@ function Layout() {
         </ErrorBoundary>
       </main>
 
-      {/* Navegación inferior (celular) */}
-      <nav aria-label="Principal móvil" className="fixed inset-x-0 bottom-0 z-20 flex border-t border-line bg-surface md:hidden">
-        <NavLink to="/" end className={tab}><Icon name="grid" />Proyectos</NavLink>
-        {isEditor && <NavLink to="/proyectos/nuevo" className={tab}><Icon name="plus" />Nuevo</NavLink>}
-        {isEditor && <NavLink to="/usuarios" className={tab}><Icon name="users" />Usuarios</NavLink>}
-        <button onClick={logout} className="flex flex-1 flex-col items-center gap-0.5 py-2 text-xs font-medium text-muted"><Icon name="logout" />Salir</button>
+      {/* Navegación inferior (celular): cápsula flotante de vidrio, al estilo de iOS */}
+      <nav
+        aria-label="Principal móvil"
+        className="fixed inset-x-4 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-30 mx-auto max-w-md md:hidden"
+      >
+        <div className="glass-nav flex items-center justify-between gap-1 rounded-full border border-fg/10 bg-surface/70 p-1.5 shadow-[0_10px_40px_-8px_rgba(0,0,0,0.35)]">
+          <NavLink to="/" end className={tab}><Icon name="grid" className="h-[22px] w-[22px]" />Proyectos</NavLink>
+          {isEditor && <NavLink to="/proyectos/nuevo" className={tab}><Icon name="plus" className="h-[22px] w-[22px]" />Nuevo</NavLink>}
+          {isEditor && <NavLink to="/usuarios" className={tab}><Icon name="users" className="h-[22px] w-[22px]" />Usuarios</NavLink>}
+          <button onClick={confirmLogout} className={tab({ isActive: false })}><Icon name="logout" className="h-[22px] w-[22px]" />Salir</button>
+        </div>
       </nav>
 
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
+      {logoutDialog}
     </div>
   );
 }
