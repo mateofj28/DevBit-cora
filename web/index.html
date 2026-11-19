@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#faf7f2" />
+  <meta name="description" content="Catálogo de proyectos de software: stack, servicios, despliegue e incidentes." />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <title>DevBitácora</title>
+  <script>
+    // Claro por defecto. Aplica el tema guardado antes de pintar para evitar un destello al cargar.
+    if (localStorage.getItem('devbitacora-theme') === 'dark') document.documentElement.classList.add('dark');
+  </script>
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+
+</html>

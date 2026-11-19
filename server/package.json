@@ -1,0 +1,33 @@
+{
+    "name": "devbitacora-server",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "node --env-file-if-exists=.env --watch --import tsx src/index.ts",
+        "start": "node --env-file-if-exists=.env --import tsx src/index.ts",
+        "seed": "node --env-file-if-exists=.env --import tsx src/seed-demo.ts",
+        "test": "vitest run",
+        "typecheck": "tsc --noEmit"
+    },
+    "dependencies": {
+        "@electric-sql/pglite": "^0.5.16",
+        "@fastify/cookie": "^11.1.5",
+        "@fastify/jwt": "^10.2.8",
+        "@fastify/rate-limit": "^11.2.2",
+        "@fastify/static": "^10.1.11",
+        "@fastify/swagger": "^9.9.5",
+        "@fastify/swagger-ui": "^6.1.4",
+        "@sinclair/typebox": "^0.34.52",
+        "devbitacora": "file:..",
+        "fastify": "^5.12.8",
+        "pg": "^8.23.1",
+        "tsx": "^4.23.15"
+    },
+    "devDependencies": {
+        "@types/node": "^26.6.6",
+        "@types/pg": "^8.23.1",
+        "typescript": "^7.0.2",
+        "vitest": "^5.1.0"
+    }
+}
