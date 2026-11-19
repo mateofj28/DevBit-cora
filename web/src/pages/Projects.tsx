@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { STATUS_LABEL, type Status } from '../api';
+import { KIND_LABEL, STATUS_LABEL, type Status } from '../api';
 import { useAuth } from '../auth';
 import { Icon } from '../icons';
 import { useCatalog, useProjects } from '../queries';
-import { Dropdown, Toggle } from '../controls';
+import { Dropdown, SearchSelect, Toggle } from '../controls';
 import { btnPrimary, Chip, EmptyState, ErrorBox, Input, PageHeader, ProviderChip, Skeleton, STATUS_OPTIONS, StatusBadge } from '../ui';
 
 const COLS = 'md:grid md:grid-cols-[minmax(0,2.2fr)_minmax(0,1.2fr)_minmax(0,1.6fr)_4.5rem] md:items-center md:gap-4';
@@ -76,17 +76,21 @@ export default function ProjectsPage() {
           />
         </div>
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-          <Dropdown
+          <SearchSelect
             aria-label="Tecnología"
+            allLabel="Toda tecnología"
+            searchPlaceholder="Buscar tecnología…"
             value={filters.technology}
             onChange={(v) => setParam('technology', v)}
-            options={[{ value: '', label: 'Toda tecnología' }, ...technologies.map((t) => ({ value: t.name, label: t.name }))]}
+            options={technologies.map((t) => ({ value: t.name, label: t.name, hint: KIND_LABEL[t.kind] ?? t.kind }))}
           />
-          <Dropdown
+          <SearchSelect
             aria-label="Proveedor"
+            allLabel="Todo proveedor"
+            searchPlaceholder="Buscar proveedor…"
             value={filters.provider}
             onChange={(v) => setParam('provider', v)}
-            options={[{ value: '', label: 'Todo proveedor' }, ...providers.map((p) => ({ value: p, label: p }))]}
+            options={providers.map((p) => ({ value: p, label: p }))}
           />
           <Dropdown
             aria-label="Estado"

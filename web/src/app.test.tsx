@@ -287,6 +287,39 @@ describe('controles propios', () => {
     expect(calls.find((c) => c.method === 'POST')!.body.status).toBe('mantenimiento');
   });
 
+  it('el filtro de tecnología se puede escribir para encontrarla y se limpia con "Toda tecnología"', async () => {
+    mockApi(signedIn);
+    renderApp('/');
+    const user = userEvent.setup();
+
+    await user.click(await screen.findByRole('combobox', { name: 'Tecnología' }));
+    await user.type(await screen.findByRole('textbox', { name: 'Buscar en tecnología' }), 'sup');
+    const list = within(screen.getByRole('listbox', { name: 'Tecnología' }));
+    expect(list.queryByRole('option', { name: /React/ })).toBeNull(); // la lista se filtró
+    await user.click(list.getByRole('option', { name: /Supabase/ }));
+
+    await waitFor(() =>
+      expect(calls.some((c) => c.url.pathname === '/api/projects' && c.url.searchParams.get('technology') === 'Supabase')).toBe(true),
+    );
+    // El filtro elegido se ve en el botón y se puede quitar.
+    expect(screen.getByRole('combobox', { name: 'Tecnología' }).textContent).toContain('Supabase');
+    await user.click(screen.getByRole('combobox', { name: 'Tecnología' }));
+    await user.click(await screen.findByRole('option', { name: 'Toda tecnología' }));
+    expect(screen.getByRole('combobox', { name: 'Tecnología' }).textContent).toContain('Toda tecnología');
+  });
+
+  it('con el teclado: escribir, flecha abajo y Enter eligen una tecnología', async () => {
+    mockApi(signedIn);
+    renderApp('/');
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole('combobox', { name: 'Tecnología' }));
+    await user.type(await screen.findByRole('textbox', { name: 'Buscar en tecnología' }), 'rea{Enter}');
+
+    await waitFor(() =>
+      expect(calls.some((c) => c.url.pathname === '/api/projects' && c.url.searchParams.get('technology') === 'React')).toBe(true),
+    );
+  });
+
   it('el desplegable de estado del listado filtra la consulta', async () => {
     mockApi(signedIn);
     renderApp('/');

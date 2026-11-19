@@ -2,7 +2,7 @@ import * as Popover from '@radix-ui/react-popover';
 import * as RadioGroup from '@radix-ui/react-radio-group';
 import * as SelectPrimitive from '@radix-ui/react-select';
 import * as Switch from '@radix-ui/react-switch';
-import { useId, useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'react';
 import { inputCls } from './ui';
 
 const EMPTY = '__vacio__'; // Radix no admite value="" en las opciones
@@ -182,6 +182,111 @@ export function Combobox({
                 </li>
               );
             })}
+          </ul>
+        </Popover.Content>
+      </Popover.Portal>
+    </Popover.Root>
+  );
+}
+
+/**
+ * Selector con buscador: se abre como un desplegable y trae un campo para escribir y filtrar la lista.
+ * Pensado para listas largas (tecnologías, proveedores). `allLabel` es la opción "sin filtro" (valor "").
+ */
+export function SearchSelect({
+  value, onChange, options, allLabel, searchPlaceholder = 'Buscar…', 'aria-label': ariaLabel, className = '',
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  options: Array<{ value: string; label: string; hint?: string }>;
+  allLabel: string;
+  searchPlaceholder?: string;
+  'aria-label': string;
+  className?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [term, setTerm] = useState('');
+  const [active, setActive] = useState(0);
+  const listId = useId();
+  const activeRef = useRef<HTMLLIElement>(null);
+
+  const t = term.trim().toLowerCase();
+  const items = useMemo(() => {
+    const matches = options.filter((o) => !t || o.label.toLowerCase().includes(t));
+    // Sin texto escrito se ofrece primero "sin filtro"; al buscar solo se muestran coincidencias.
+    return t ? matches : [{ value: '', label: allLabel } as (typeof options)[number], ...matches];
+  }, [options, t, allLabel]);
+
+  useEffect(() => { activeRef.current?.scrollIntoView?.({ block: 'nearest' }); }, [active, open]);
+
+  const choose = (v: string) => {
+    onChange(v);
+    setOpen(false);
+  };
+  const current = options.find((o) => o.value === value);
+
+  return (
+    <Popover.Root
+      open={open}
+      onOpenChange={(o) => {
+        setOpen(o);
+        if (o) { setTerm(''); setActive(Math.max(0, options.findIndex((x) => x.value === value) + 1)); }
+      }}
+    >
+      <Popover.Trigger asChild>
+        <button
+          type="button"
+          role="combobox"
+          aria-label={ariaLabel}
+          aria-expanded={open}
+          aria-haspopup="listbox"
+          aria-controls={listId}
+          className={`${inputCls} flex items-center justify-between gap-2 text-left ${className}`}
+        >
+          <span className={`truncate ${current ? '' : 'text-fg'}`}>{current?.label ?? allLabel}</span>
+          <Chevron />
+        </button>
+      </Popover.Trigger>
+      <Popover.Portal>
+        <Popover.Content
+          align="start"
+          sideOffset={6}
+          className={`${panelCls} w-[var(--radix-popover-trigger-width)] min-w-60`}
+        >
+          <div className="border-b border-line p-2">
+            <input
+              autoFocus
+              value={term}
+              onChange={(e) => { setTerm(e.target.value); setActive(0); }}
+              placeholder={searchPlaceholder}
+              aria-label={`Buscar en ${ariaLabel.toLowerCase()}`}
+              autoComplete="off"
+              className={`${inputCls} h-9`}
+              onKeyDown={(e) => {
+                if (e.key === 'ArrowDown') { e.preventDefault(); setActive((i) => Math.min(i + 1, items.length - 1)); }
+                else if (e.key === 'ArrowUp') { e.preventDefault(); setActive((i) => Math.max(i - 1, 0)); }
+                else if (e.key === 'Enter') { e.preventDefault(); if (items[active]) choose(items[active].value); }
+              }}
+            />
+          </div>
+          <ul id={listId} role="listbox" aria-label={ariaLabel} className="max-h-64 overflow-y-auto p-1.5">
+            {items.length === 0 && <li className="px-3 py-4 text-center text-sm text-muted">Sin resultados para "{term}".</li>}
+            {items.map((o, i) => (
+              <li
+                key={o.value || '__todos__'}
+                ref={i === active ? activeRef : undefined}
+                role="option"
+                aria-selected={o.value === value}
+                data-highlighted={i === active ? '' : undefined}
+                className={itemCls}
+                onMouseEnter={() => setActive(i)}
+                onClick={() => choose(o.value)}
+              >
+                <span className={`flex-1 truncate ${o.value === value ? 'font-semibold' : ''}`}>{o.label}</span>
+                {o.hint && <span className="text-xs text-muted">{o.hint}</span>}
+                {o.value === value && <span className="text-accent" aria-hidden>✓</span>}
+              </li>
+            ))}
           </ul>
         </Popover.Content>
       </Popover.Portal>
